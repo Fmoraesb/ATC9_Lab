@@ -22,12 +22,14 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, AdapterView.OnIt
         this.contatoDao = ContatoDAO(this)
         listarContatos()
         //--------------------------------------------//
-        val btnSalvar : Button = this.findViewById(R.id.btnSalvar)
-        btnSalvar.setOnClickListener(this)
-        //--------------------------------------------//
+
         val lstContatos : ListView = this.findViewById(R.id.lstContatos)
         lstContatos.onItemClickListener = this
         lstContatos.onItemLongClickListener = this
+        //--------------------------------------------//
+        val btnSalvar : Button = this.findViewById(R.id.btnSalvar)
+        val btnExcluir : Button = this.findViewById(R.id.btnExcluir)
+        btnSalvar.setOnClickListener(this)
     }
 
     override fun onClick(v: View?) {
@@ -42,16 +44,30 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, AdapterView.OnIt
         if (this.idEmEdicao == 0) {
             contatoDao?.create(contato)
         }else {
+            val dialog = AlertDialog.Builder(this)
+            dialog.setTitle("Editar Contato")
+            dialog.setMessage("Deseja editar o contato ${contato.nome}?")
+            dialog.setPositiveButton("Sim") { _: DialogInterface, _:Int ->
             contatoDao?.update(contato)
+                listarContatos()
+            }
+            dialog.setNegativeButton("Não") { _: DialogInterface, _: Int ->
+                this.idEmEdicao = 0
+                txtNome.setText("")
+                txtEmail.setText("")
+                txtTelefone.setText("")
+                listarContatos()
+            }
+            dialog.show()
         }
+
         //--------------------------------------------//
         this.idEmEdicao = 0
         txtNome.setText("")
         txtEmail.setText("")
         txtTelefone.setText("")
-        //--------------------------------------------//
-        listarContatos()
     }
+
 
     private fun listarContatos() {
         var contatos: List<Contato> = contatoDao!!.listar()
@@ -90,12 +106,12 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, AdapterView.OnIt
        val confirmarExclusao = AlertDialog.Builder(this)
         confirmarExclusao.setTitle("Excluir Contato")
         confirmarExclusao.setMessage("Confirma a Exclusão do Contato ${contatoDao?.retrieve(id.toInt())}?")
-        confirmarExclusao.setPositiveButton("Sim") {dialog: DialogInterface, which: Int ->
+        confirmarExclusao.setPositiveButton("Sim") { dialog: DialogInterface, _: Int ->
             val id = this.listaDeIds[position]
             this.contatoDao?.delete(id)
             listarContatos()
         }
-        confirmarExclusao.setNegativeButton("Não") {dialog: DialogInterface?, which: Int ->
+        confirmarExclusao.setNegativeButton("Não") { dialog: DialogInterface?, _: Int ->
 
         }
         confirmarExclusao.show()
