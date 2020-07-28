@@ -15,7 +15,7 @@ class DBAdapter (context: Context?) : SQLiteOpenHelper(context, "agenda",null, 1
     }
 
     override fun onCreate(db: SQLiteDatabase?) {
-       val sql = "CREATE TABLE agenda(id integer primary key autoincrement" +
+       val sql = "CREATE TABLE agenda(id integer primary key autoincrement," +
                "nome text, email text, telefone text);"
         db?.execSQL(sql)
     }

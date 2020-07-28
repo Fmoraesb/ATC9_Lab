@@ -1,14 +1,15 @@
 package com.fernandomoraes.atc9_sqlitelab
 
+import android.content.DialogInterface
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
-import android.widget.ArrayAdapter
-import android.widget.Button
-import android.widget.EditText
-import android.widget.ListView
+import android.widget.*
+import androidx.appcompat.app.AlertDialog
+import kotlinx.android.synthetic.main.activity_main.*
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), View.OnClickListener, AdapterView.OnItemClickListener
+    , AdapterView.OnItemLongClickListener {
 
     var contatoDao: ContatoDAO? = null
     var listaDeIds : ArrayList<Int> = ArrayList()
@@ -25,11 +26,11 @@ class MainActivity : AppCompatActivity() {
         btnSalvar.setOnClickListener(this)
         //--------------------------------------------//
         val lstContatos : ListView = this.findViewById(R.id.lstContatos)
-        lstContatos.setOnItemClickListener(this)
-        lstContatos.setOnLongClickListener(this)
+        lstContatos.onItemClickListener = this
+        lstContatos.onItemLongClickListener = this
     }
 
-    fun onClick(v: View?) {
+    override fun onClick(v: View?) {
         val txtNome : EditText = this.findViewById(R.id.edtNome)
         val txtEmail : EditText = this.findViewById(R.id.edtEmail)
         val txtTelefone: EditText = this.findViewById(R.id.edtTelefone)
@@ -52,7 +53,7 @@ class MainActivity : AppCompatActivity() {
         listarContatos()
     }
 
-    fun listarContatos() {
+    private fun listarContatos() {
         var contatos: List<Contato> = contatoDao!!.listar()
         var nomes: ArrayList<String> = ArrayList()
         this.listaDeIds = ArrayList()
@@ -67,5 +68,39 @@ class MainActivity : AppCompatActivity() {
         lstContatos.adapter = adapter
     }
 
-    onItemClick()
+    override fun onItemClick(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+        val id = this.listaDeIds[position]
+        this.idEmEdicao = id
+        val contato: Contato? = this.contatoDao?.retrieve(id)
+        val txtNome : EditText = this.findViewById(R.id.edtNome)
+        val txtEmail : EditText = this.findViewById(R.id.edtEmail)
+        val txtTelefone: EditText = this.findViewById(R.id.edtTelefone)
+        txtNome.setText(contato?.nome)
+        txtEmail.setText(contato?.email)
+        txtTelefone.setText(contato?.telefone)
+        btnExcluir.isEnabled = true
+    }
+
+    override fun onItemLongClick(
+        parent: AdapterView<*>?,
+        view: View?,
+        position: Int,
+        id: Long
+    ): Boolean {
+       val confirmarExclusao = AlertDialog.Builder(this)
+        confirmarExclusao.setTitle("Excluir Contato")
+        confirmarExclusao.setMessage("Confirma a Exclusão do Contato ${contatoDao?.retrieve(id.toInt())}?")
+        confirmarExclusao.setPositiveButton("Sim") {dialog: DialogInterface, which: Int ->
+            val id = this.listaDeIds[position]
+            this.contatoDao?.delete(id)
+            listarContatos()
+        }
+        confirmarExclusao.setNegativeButton("Não") {dialog: DialogInterface?, which: Int ->
+
+        }
+        confirmarExclusao.show()
+        return true
+    }
+
+
 }
